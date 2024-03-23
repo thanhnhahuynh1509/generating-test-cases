@@ -1,13 +1,49 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.pick {
+    background-color: red !important;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.border_top {
+    border-top: 1px solid black !important;
+}
+
+.card {
+    background-color: white;
+    padding: 20px;
+    width: 200px;
+    border-radius: var(--radius-2);
+    border: var(--border-size-2) solid var(--gray-4);
+    cursor: pointer;
+    transition: all .3s;
+    position: relative;
+    word-wrap: break-word;
+}
+
+.active {
+    background: rgb(255, 255, 255);
+    border: var(--border-size-2) solid var(--gray-8);
+    cursor: default;
+    transform: translateY(-5px);
+}
+
+.toolbar {
+    position: absolute;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.tool-item,
+.tool-item-child {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 99999px;
+    background-color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
 }
