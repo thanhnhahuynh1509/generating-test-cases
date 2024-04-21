@@ -9,7 +9,6 @@ function Table({ tab, onSave }) {
   const hotRef = useRef();
   const [height, setHeight] = useState(window.innerHeight);
   const [renderedData, setRenderData] = useState(tab?.table);
-  //  ?? MOCK_DATA
 
   useEffect(() => {
     const resizeEvent = window.addEventListener("resize", () => {
@@ -24,8 +23,6 @@ function Table({ tab, onSave }) {
   useEffect(() => {
     setRenderData((prev) => tab?.table ?? [[]]);
   }, [tab]);
-
-  console.log("update")
 
   return (
     <HotTable
@@ -47,6 +44,12 @@ function Table({ tab, onSave }) {
       afterChange={(changes, _source) => {
         if (!changes?.length) {
           return;
+        } else {
+          const prevContent = changes[0][2];
+          const updatedContent = changes[0][3];
+          if (prevContent === updatedContent) {
+            return;
+          }
         }
         if (onSave) {
           onSave(tab, hotRef.current.hotInstance.getData());

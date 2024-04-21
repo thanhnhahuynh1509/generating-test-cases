@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 
 function SheetTab({ tab, isActive, onClick, onDelete, onUpdate }) {
   const [onConfirmDelete, setOnConfirmDelete] = useState(false);
-  const [title] = useState(tab?.title);
   useEffect(() => {
     const id = window.addEventListener("click", () => {
       setOnConfirmDelete(false);
@@ -19,13 +18,14 @@ function SheetTab({ tab, isActive, onClick, onDelete, onUpdate }) {
       style={{ userSelect: "none", fontSize: `14px` }}
       contentEditable={isActive}
       suppressContentEditableWarning
-      onInput={(e) => {
+      onBlur={(e) => {
+        if (e.currentTarget.textContent === tab?.title) return;
         if (onUpdate) {
           onUpdate(tab, e.currentTarget.textContent);
         }
       }}
     >
-      {title}
+      {tab?.title}
       {!isActive && (
         <div className="toolbar">
           <div

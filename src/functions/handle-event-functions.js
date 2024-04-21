@@ -39,7 +39,6 @@ export const handleBeforeChange = (hotRef) => {
     let className = "border_top";
     if (!value?.trim()) {
       className = className.replace("border_top", "");
-      console.log(_);
     }
     if (col === 0) {
       updateBorderRow(hotRef)(row, className);

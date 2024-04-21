@@ -45,6 +45,7 @@ function App() {
         <Table
           tab={currentTab}
           onSave={(updatedTab, data) => {
+            setCurrentTab((prev) => ({ ...prev, data }));
             setTabs((tabs) =>
               tabs.map((tab) => {
                 if (tab.id === updatedTab?.id) {

@@ -14,32 +14,14 @@ export const exportXLSX = () => {
     const hasData = table.some((row) => row.some((el) => !!el?.trim()));
     if (hasData) {
       const [titles, data] = generateTitlesAndData(table, table[0].length);
-      // CREATE TAB TITLE
-      const tabTitle = tab.title;
-      sheet.mergeCells(
-        `A${rowTabTitleIndex}:${getNextCharAt(
-          "A",
-          titles.length - 1
-        )}${rowTabTitleIndex}`
-      );
-      sheet.getCell(`A${rowTabTitleIndex}`).value = tabTitle;
-      styleSheetTabTitle(sheet, rowTabTitleIndex);
-
-      // CREATE TABLE TITLE
-      for (let i = 0; i < titles.length; i++) {
-        sheet.getCell(`${getNextCharAt("A", i)}${rowTabTitleIndex + 1}`).value =
-          titles[i];
+      createTabTitle(sheet, tab, titles, rowTabTitleIndex);
+      createTableTitles(sheet, titles, rowTabTitleIndex);
+      createCellData(sheet, data, rowTabTitleIndex);
+      for (let i = 1; i <= table[0].length; i++) {
+        if (sheet.getColumn(i)) {
+          sheet.getColumn(i).numFmt = "@";
+        }
       }
-      styleSheetTitle(sheet, rowTabTitleIndex + 1);
-      // CREATE DATA
-      // eslint-disable-next-line no-loop-func
-      data.forEach((row, i) => {
-        Object.values(row).forEach((val, colIdx) => {
-          sheet.getCell(
-            `${getNextCharAt("A", colIdx)}${rowTabTitleIndex + 2 + i}`
-          ).value = val;
-        });
-      });
       rowTabTitleIndex += data.length + 2;
     }
   }
@@ -48,6 +30,66 @@ export const exportXLSX = () => {
 
   downloadFile(workbook);
 };
+
+function generateTitlesAndData(rows, totalCols) {
+  const length = getRowsLength(rows);
+
+  const titles = createComponentTitles(rows, length);
+  const components = createComponents(rows, length);
+  const entities = createEntities(rows, length);
+  const testCases = createTestCases(rows, length, totalCols);
+  const mapTest = createMapTest(components, entities, testCases);
+
+  const data = [];
+
+  for (const test of mapTest) {
+    const eachCase = {};
+    for (const title of titles) {
+      let values = test.get(title);
+      if (!values?.length) {
+        values = [""];
+      } else if (values?.length > 1) {
+        values = values?.map((val) => `- ${val}`);
+      }
+      eachCase[title] = values.join("\n");
+    }
+    data.push(eachCase);
+  }
+
+  return [titles, data];
+}
+
+function createTabTitle(sheet, tab, titles, rowTabTitleIndex) {
+  const tabTitle = tab.title;
+  sheet.mergeCells(
+    `A${rowTabTitleIndex}:${getNextCharAt(
+      "A",
+      titles.length - 1
+    )}${rowTabTitleIndex}`
+  );
+  sheet.getCell(`A${rowTabTitleIndex}`).value = tabTitle;
+  styleSheetTabTitle(sheet, rowTabTitleIndex);
+}
+
+function createTableTitles(sheet, titles, rowTabTitleIndex) {
+  for (let i = 0; i < titles.length; i++) {
+    sheet.getCell(`${getNextCharAt("A", i)}${rowTabTitleIndex + 1}`).value =
+      titles[i];
+  }
+  styleSheetTitle(sheet, rowTabTitleIndex + 1);
+}
+
+function createCellData(sheet, data, rowTabTitleIndex) {
+  data.forEach((row, i) => {
+    Object.values(row).forEach((val, colIdx) => {
+      const cell = sheet.getCell(
+        `${getNextCharAt("A", colIdx)}${rowTabTitleIndex + 2 + i}`
+      );
+      cell.numFmt = "@";
+      cell.value = `${val}`;
+    });
+  });
+}
 
 function getNextCharAt(char, index) {
   return String.fromCharCode(char.charCodeAt(0) + index);
@@ -89,34 +131,6 @@ function autoSize(sheet, fromRow) {
       col.width = width / PIXELS_PER_EXCEL_WIDTH_UNIT + 1;
     }
   }
-}
-
-function generateTitlesAndData(rows, totalCols) {
-  const length = getRowsLength(rows);
-
-  const titles = createComponentTitles(rows, length);
-  const components = createComponents(rows, length);
-  const entities = createEntities(rows, length);
-  const testCases = createTestCases(rows, length, totalCols);
-  const mapTest = createMapTest(components, entities, testCases);
-
-  const data = [];
-
-  for (const test of mapTest) {
-    const eachCase = {};
-    for (const title of titles) {
-      let values = test.get(title);
-      if (!values?.length) {
-        values = [""];
-      } else if (values?.length > 1) {
-        values = values?.map((val) => `- ${val}`);
-      }
-      eachCase[title] = values.join("\n");
-    }
-    data.push(eachCase);
-  }
-
-  return [titles, data];
 }
 
 function getRowsLength(rows) {
