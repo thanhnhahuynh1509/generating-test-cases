@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/generating-test-cases/static/css/main.b45c417b.css",
+    "main.js": "/generating-test-cases/static/js/main.8ccf046b.js",
+    "index.html": "/generating-test-cases/index.html",
+    "main.b45c417b.css.map": "/generating-test-cases/static/css/main.b45c417b.css.map",
+    "main.8ccf046b.js.map": "/generating-test-cases/static/js/main.8ccf046b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b45c417b.css",
+    "static/js/main.8ccf046b.js"
+  ]
+}
