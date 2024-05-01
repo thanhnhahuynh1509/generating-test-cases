@@ -43,20 +43,22 @@ function App() {
 
   return (
     <div>
-      <TableV1
-        tab={currentTab}
-        onSave={(updatedTab, data) => {
-          setCurrentTab((prev) => ({ ...prev, data }));
-          setTabs((tabs) =>
-            tabs.map((tab) => {
-              if (tab.id === updatedTab?.id) {
-                tab.table = data;
-              }
-              return tab;
-            })
-          );
-        }}
-      />
+      {currentTab && (
+        <TableV1
+          tab={currentTab}
+          onSave={(updatedTab, data) => {
+            setCurrentTab((prev) => ({ ...prev, data }));
+            setTabs((tabs) =>
+              tabs.map((tab) => {
+                if (tab.id === updatedTab?.id) {
+                  tab.table = data;
+                }
+                return tab;
+              })
+            );
+          }}
+        />
+      )}
       {/* {currentTab && (
         <Table
           tab={currentTab}
