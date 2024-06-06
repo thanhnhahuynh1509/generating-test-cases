@@ -24,13 +24,13 @@ function TableV1({ tab, onSave }) {
     <HotTable
       data={renderedData}
       rowHeaders={true}
-      colHeaders={["Elements", "Data"]}
+      colHeaders={["Data"]}
       height={`${height - 200}`}
       autoWrapRow={true}
       autoWrapCol={true}
       minCols={100}
       minRows={100}
-      fixedColumnsStart={2}
+      fixedColumnsStart={1}
       fixedRowsTop={2}
       manualColumnResize={true}
       manualColumnMove
@@ -49,6 +49,7 @@ function TableV1({ tab, onSave }) {
           }
         }
         if (onSave) {
+          console.log(hotRef.current.hotInstance.getData());
           onSave(tab, hotRef.current.hotInstance.getData());
         }
       }}
@@ -64,10 +65,7 @@ function TableV1({ tab, onSave }) {
             for (let i = 0; i < this.instance.countCols(); i++) {
               this.instance.setCellMeta(row, i, "className", ` bg-title`);
             }
-          } else {
-            for (let i = 0; i < this.instance.countCols(); i++) {
-              this.instance.setCellMeta(row, i, "className");
-            }
+          } else if (isEnclosedInBrackets(data?.trim())) {
             this.instance.setCellMeta(row, 0, "className", ` text-bold`);
           }
         }
@@ -75,6 +73,11 @@ function TableV1({ tab, onSave }) {
       licenseKey="non-commercial-and-evaluation"
     />
   );
+}
+
+function isEnclosedInBrackets(str) {
+  const regex = /^<[^<>]+>$/;
+  return regex.test(str);
 }
 
 export default TableV1;

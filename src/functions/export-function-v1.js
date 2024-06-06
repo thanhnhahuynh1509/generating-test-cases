@@ -8,9 +8,14 @@ export const exportXLSXV1 = () => {
   const sheet = workbook.addWorksheet("My Sheet");
 
   const tabs = JSON.parse(localStorage.getItem("tabs"));
+  console.log(tabs);
+  console.log(tabs[0].table);
   let rowIdx = 0;
   for (const tab of tabs) {
     const table = tab.table;
+    createTabTitle(sheet, tab, rowIdx);
+    rowIdx += 1;
+
     for (let i = 1; i <= table[0].length; i++) {
       if (sheet.getColumn(i)) {
         sheet.getColumn(i).numFmt = "@";
@@ -21,106 +26,80 @@ export const exportXLSXV1 = () => {
         };
       }
     }
+
     const hasData = table.some((row) => row.some((el) => !!el?.trim()));
 
     if (hasData) {
-      const cases = generateTableCases(table);
-      createTabTitle(sheet, tab, rowIdx + 1);
-      createCellData(sheet, cases, rowIdx + 2);
-      rowIdx += cases.length + 1;
+      const priorityIndex = table.findIndex((value) =>
+        value.find((value) => value?.trim()?.toLowerCase() === "[priority]")
+      );
+      const resourceIndex = table.findIndex((value) =>
+        value.find((value) => value?.trim()?.toLowerCase() === "[resource]")
+      );
+      const resultIndex = table.findIndex((value) =>
+        value.find((value) => value?.trim()?.toLowerCase() === "[result]")
+      );
+
+      const priorityData = [
+        "",
+        ...table[priorityIndex + 1].filter((data) => !!data),
+      ];
+
+      const testCases = [];
+      for (let col = 1; col < priorityData.length; col++) {
+        const resourcesData = [];
+        for (let row = resourceIndex + 1; row < resultIndex; row++) {
+          const title = table[row][0];
+          const hasData = !!table[row][col]?.trim();
+          if (hasData) {
+            resourcesData.push(title);
+          }
+        }
+
+        const resultsData = [];
+        for (let row = resultIndex + 1; row < table[0].length; row++) {
+          const title = table[row][0];
+          const hasData = !!table[row][col]?.trim();
+          if (hasData) {
+            resultsData.push(title);
+          }
+        }
+
+        testCases.push({
+          resourcesData,
+          resultsData,
+          priority: getPriorityLabel(priorityData[col]),
+        });
+      }
+
+      for (const testCase of testCases) {
+        const { resourcesData, resultsData, priority } = testCase;
+
+        createCell(sheet, rowIdx, 0, priority);
+        createCell(
+          sheet,
+          rowIdx,
+          1,
+          resourcesData
+            .map((resource, idx) => `${idx + 1}. ${resource}`)
+            .reduce((acc, data) => acc + data + "\n", "")
+        );
+        createCell(
+          sheet,
+          rowIdx,
+          2,
+          resultsData
+            .map((resource) => `- ${resource}`)
+            .reduce((acc, data) => acc + data + "\n", "")
+        );
+
+        rowIdx += 1;
+      }
     }
   }
   alignSheet(sheet);
   downloadFile(workbook);
 };
-
-function generateTableCases(table) {
-  const resourceIndex = table.findIndex((value) =>
-    value.find((value) => value?.trim()?.toLowerCase() === "[resource]")
-  );
-  const resultIndex = table.findIndex((value) =>
-    value.find((value) => value?.trim()?.toLowerCase() === "[result]")
-  );
-  const resourceData = createData(table, resourceIndex + 1, resultIndex);
-  const resultData = createData(table, resultIndex + 1, -1);
-
-  const priorityIndex = 1;
-  let colIndex = 2;
-  const cases = [];
-  for (const priority of table[priorityIndex].slice(2)) {
-    if (!priority?.trim()) {
-      break;
-    }
-    const resourceCases = getTestCaseData(resourceData, colIndex);
-    const resultCases = getTestCaseData(resultData, colIndex);
-
-    cases.push({
-      priority: priority,
-      resources: resourceCases,
-      resultCases: resultCases,
-    });
-
-    colIndex++;
-  }
-
-  return cases;
-}
-
-function createData(table, firstIndex, lastIndex) {
-  const data = table
-    .slice(firstIndex, lastIndex)
-    .filter((data) => data[1]?.trim());
-
-  let lastElement = "";
-  for (const items of data) {
-    const element = items[0];
-    if (element?.trim()) {
-      lastElement = element?.trim();
-      continue;
-    }
-
-    items[0] = lastElement;
-  }
-  return data;
-}
-
-function getTestCaseData(data, colIndex) {
-  const result = [];
-
-  for (const items of data) {
-    const check = items[colIndex]?.trim();
-    if (!check) {
-      continue;
-    }
-    const element = items[0];
-    const existedEl = result.find((item) => item[element]);
-    if (!existedEl) {
-      result.push({ [element]: [items[1]] });
-    } else {
-      existedEl[element].push(items[1]);
-    }
-  }
-
-  return result;
-}
-
-function createCellData(sheet, cases, rowIdx) {
-  for (const caseItem of cases) {
-    const { priority, resources, resultCases } = caseItem;
-
-    // const resourceString = convertToStrings(resources, true).join("\n");
-    // const resultString = convertToStrings(resultCases, false).join("\n");
-
-    const resourceString = convertToRichtext(resources, true);
-    const resultString = convertToRichtext(resultCases, false);
-
-    createCell(sheet, rowIdx, 0, getPriorityLabel(priority));
-    createCell(sheet, rowIdx, 1, resourceString);
-    createCell(sheet, rowIdx, 2, resultString);
-
-    rowIdx++;
-  }
-}
 
 function getPriorityLabel(priority) {
   switch (priority.toLowerCase()) {
